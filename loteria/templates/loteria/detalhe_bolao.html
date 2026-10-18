@@ -1,0 +1,238 @@
+{% extends 'loteria/base.html' %}
+
+{% block title %}{{ bolao.nome }} - Detalhes{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <!-- Cabeçalho do Bolão -->
+    <div class="bg-slate-800 rounded-xl p-6 shadow-lg mb-8 border border-slate-700">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-3xl font-extrabold text-white">{{ bolao.nome }}</h2>
+            <span class="px-3 py-1 text-sm font-semibold rounded-full 
+                {% if bolao.encerrado %}bg-red-500/20 text-red-400{% else %}bg-emerald-500/20 text-emerald-400{% endif %}">
+                {{ bolao.get_tipo_display }}
+            </span>
+        </div>
+        <p class="text-slate-400">Data do Sorteio: <span class="text-slate-200">{{ bolao.data_sorteio|date:"d/m/Y" }}</span></p>
+        <p class="text-slate-400">Total de Cotas Pagas: <span class="text-emerald-400 font-bold">{{ cotas_pagas|length }}</span></p>
+    </div>
+
+    <!-- Extrato Individual do Usuário Logado -->
+    {% if cota_usuario %}
+        <div class="mb-8 p-4 rounded-lg flex items-center justify-between border 
+            {% if cota_usuario.pago %}
+                bg-emerald-900/20 border-emerald-500/50
+            {% else %}
+                bg-yellow-900/20 border-yellow-500/50
+            {% endif %}">
+            
+            <div>
+                <h4 class="text-white font-bold">Seu Status neste Bolão</h4>
+                <p class="text-sm text-slate-400">Titular da Cota: {{ cota_usuario.membro.usuario.get_full_name|default:cota_usuario.membro.usuario.username }}</p>
+            </div>
+            
+            <div class="text-right">
+                {% if cota_usuario.pago %}
+                    <span class="inline-flex items-center gap-1 px-3 py-1 bg-emerald-500/20 text-emerald-400 font-bold rounded-full border border-emerald-500/30">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                        COTA PAGA
+                    </span>
+                    {% else %}
+                    <!-- Botão que abre o PIX -->
+                    <button onclick="abrirModalPix()" class="inline-flex items-center gap-1 px-4 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/40 text-yellow-400 font-bold rounded-full border border-yellow-500/50 shadow-lg shadow-yellow-900/20 transition-all cursor-pointer">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        PAGAR VIA PIX
+                    </button>
+                {% endif %}
+
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- Lista de Participantes Confirmados (Pagos) -->
+    <div class="mb-8 bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700">
+        <h3 class="text-xl font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2 flex items-center gap-2">
+            <svg class="w-6 h-6 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"></path></svg>
+            Participantes Confirmados ({{ cotas_pagas|length }})
+        </h3>
+        
+        {% if cotas_pagas %}
+            <ul class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
+                {% for cota in cotas_pagas %}
+                    <li class="flex items-center gap-3 bg-slate-900/50 p-3 rounded-lg border border-slate-700/50">
+                        <div class="flex-shrink-0 w-6 h-6 rounded-full bg-emerald-900/50 flex items-center justify-center border border-emerald-500/30">
+                            <svg class="w-4 h-4 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                            </svg>
+                        </div>
+                        <span class="text-slate-300 font-medium truncate">
+                            {{ cota.membro.usuario.get_full_name|default:cota.membro.usuario.username }}
+                        </span>
+                    </li>
+                {% endfor %}
+            </ul>
+        {% else %}
+            <div class="p-4 rounded bg-slate-900/30 border border-slate-700 border-dashed text-center">
+                <p class="text-slate-500 italic">Nenhum pagamento confirmado até o momento. Seja o primeiro!</p>
+            </div>
+        {% endif %}
+    </div>
+
+    <!-- Cabeçalho da Seção de Jogos com Botão de Copiar -->
+    <div class="flex justify-between items-end mb-4 border-b border-slate-700 pb-2">
+        <h3 class="text-xl font-bold text-slate-200">Bilhetes Gerados ({{ jogos|length }})</h3>
+        
+        {% if jogos %}
+        <!-- ... cabeçalho dos bilhetes gerados ... -->
+        
+        <div class="flex gap-2"> <!-- Container flex para alinhar os botões -->
+            
+            {% if user.is_superuser %}
+            <!-- Botão de Relatório PDF (Apenas Admin) -->
+            <a href="{% url 'relatorio_bolao' bolao.id %}" target="_blank" class="flex items-center gap-2 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white text-sm font-bold rounded-lg shadow transition-colors focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                Exportar PDF
+            </a>
+            {% endif %}
+
+            {% if jogos %}
+            <button onclick="copiarJogosWhatsApp()" id="btn-copiar" class="flex items-center gap-2 px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-bold rounded-lg shadow transition-colors focus:outline-none">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+                Copiar p/ WhatsApp
+            </button>
+            {% endif %}
+            
+        </div>
+
+        {% else %}
+            <div class="p-4 rounded bg-slate-900/30 border border-slate-700 border-dashed text-center">
+                <p class="text-slate-500 italic">Nenhum bilhete foi gerado para este bolão ainda.</p>
+            </div>
+        {% endif %}
+    </div>
+    
+    <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+        {% for jogo in jogos %}
+            <div class="p-4 rounded-lg border shadow-sm transition transform hover:-translate-y-1 
+                {% if jogo.premiado %}
+                    bg-emerald-900/30 border-emerald-500
+                {% else %}
+                    bg-slate-800 border-slate-700
+                {% endif %}">
+                
+                <div class="flex justify-between items-center mb-3">
+                    <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Jogo #{{ forloop.counter }}</span>
+                    {% if jogo.premiado %}
+                        <span class="text-emerald-400" title="Premiado!">🏆</span>
+                    {% endif %}
+                </div>
+                
+                <!-- Exibe as dezenas perfeitamente separadas em círculos -->
+                <div class="flex flex-wrap gap-2 justify-center mb-3">
+                    {% for dezena in jogo.dezenas_lista %}
+                        <span class="w-8 h-8 flex items-center justify-center rounded-full bg-slate-700 text-white font-mono text-sm font-bold shadow-inner">
+                            {{ dezena }}
+                        </span>
+                    {% endfor %}
+                </div>
+
+                <div class="text-center text-sm">
+                    Acertos: 
+                    <span class="font-bold {% if jogo.acertos >= 4 %}text-emerald-400{% elif jogo.acertos > 0 %}text-yellow-400{% else %}text-slate-500{% endif %}">
+                        {{ jogo.acertos }}
+                    </span>
+                </div>
+            </div>
+        {% empty %}
+            <div class="col-span-full text-center py-8 text-slate-500 bg-slate-800 rounded-lg border border-slate-700">
+                <p>Nenhum jogo foi gerado para este bolão ainda.</p>
+            </div>
+        {% endfor %}
+    </div>
+</div> <!-- Fim da div max-w-4xl mx-auto -->
+
+<!-- MODAL DO PIX (Oculto por padrão) -->
+{% if cota_usuario and not cota_usuario.pago %}
+<div id="modal-pix" class="fixed inset-0 z-50 flex items-center justify-center bg-slate-900/80 backdrop-blur-sm hidden transition-opacity">
+    <div class="bg-slate-800 border border-emerald-500/30 rounded-2xl shadow-2xl p-6 w-11/12 max-w-sm relative">
+        <button onclick="fecharModalPix()" class="absolute top-4 right-4 text-slate-400 hover:text-white transition bg-slate-700/50 rounded-full p-1">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+        </button>
+        
+        <h3 class="text-2xl font-bold text-white text-center mb-1">Pagamento da Cota</h3>
+        <p class="text-emerald-400 text-center font-black text-3xl mb-6">R$ {{ bolao.valor_cota }}</p>
+        
+        <!-- Imagem do QR Code Gerada em Python -->
+        <div class="bg-white p-3 rounded-xl flex justify-center mb-6 border-4 border-slate-700">
+            <img src="{{ qr_code_b64 }}" alt="QR Code PIX" class="w-48 h-48">
+        </div>
+        
+        <p class="text-sm font-semibold text-slate-300 mb-2">Pix Copia e Cola:</p>
+        <div class="flex items-center gap-2">
+            <input type="text" value="{{ pix_copia_cola }}" id="input-pix" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-2.5 text-slate-400 text-xs font-mono focus:outline-none" readonly>
+            
+            <button onclick="copiarChavePix()" id="btn-copia-pix" class="bg-emerald-600 hover:bg-emerald-500 text-white p-2.5 rounded-lg shadow transition focus:outline-none shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>
+            </button>
+        </div>
+        <p class="text-xs text-slate-500 text-center mt-4">Após o pagamento, avise o administrador para liberar sua cota.</p>
+    </div>
+</div>
+
+<script>
+    function abrirModalPix() { document.getElementById('modal-pix').classList.remove('hidden'); }
+    function fecharModalPix() { document.getElementById('modal-pix').classList.add('hidden'); }
+    
+    function copiarChavePix() {
+        const input = document.getElementById('input-pix');
+        input.select();
+        input.setSelectionRange(0, 99999); // Para mobile
+        navigator.clipboard.writeText(input.value).then(() => {
+            const btn = document.getElementById('btn-copia-pix');
+            btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>';
+            btn.classList.replace('bg-emerald-600', 'bg-slate-600');
+            setTimeout(() => {
+                btn.innerHTML = '<svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"></path></svg>';
+                btn.classList.replace('bg-slate-600', 'bg-emerald-600');
+            }, 2000);
+        });
+    }
+</script>
+{% endif %}
+
+<!-- SCRIPT DO WHATSAPP AQUI, ANTES DO FIM DO BLOCO -->
+
+<script>
+    function copiarJogosWhatsApp() {
+        let texto = "🎯 *{{ bolao.nome }}*\n";
+        texto += "Sorteio: {{ bolao.data_sorteio|date:'d/m/Y' }}\n\n";
+        texto += "*Bilhetes Gerados ({{ jogos|length }}):*\n";
+
+        {% for jogo in jogos %}
+            let dezenasFormatadas_{{ forloop.counter }} = "{{ jogo.dezenas }}".replace(/,/g, ' - ');
+            texto += "Jogo #{{ forloop.counter }}: " + dezenasFormatadas_{{ forloop.counter }} + "\n";
+        {% endfor %}
+
+        texto += "\nBoa sorte a todos! 🍀";
+
+        navigator.clipboard.writeText(texto).then(() => {
+            const btn = document.getElementById('btn-copiar');
+            const conteudoOriginal = btn.innerHTML;
+            
+            btn.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg> Copiado!';
+            btn.classList.replace('bg-emerald-600', 'bg-slate-600');
+            btn.classList.replace('hover:bg-emerald-500', 'hover:bg-slate-500');
+
+            setTimeout(() => {
+                btn.innerHTML = conteudoOriginal;
+                btn.classList.replace('bg-slate-600', 'bg-emerald-600');
+                btn.classList.replace('hover:bg-slate-500', 'hover:bg-emerald-500');
+            }, 2000);
+            
+        }).catch(err => {
+            alert("Erro ao copiar: " + err);
+        });
+    }
+</script>
+
+{% endblock %}

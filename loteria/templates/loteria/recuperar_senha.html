@@ -1,0 +1,17 @@
+{% extends 'loteria/base.html' %}
+{% block title %}Recuperar Senha{% endblock %}
+{% block content %}
+<div class="min-h-[60vh] flex flex-col justify-center items-center px-4">
+    <div class="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8">
+        <h2 class="text-2xl font-bold text-white mb-2">Esqueceu a senha?</h2>
+        <p class="text-slate-400 text-sm mb-6">Digite seu endereço de e-mail abaixo e enviaremos um link para você redefinir sua senha.</p>
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            <div>
+                <input type="email" name="email" placeholder="Seu e-mail cadastrado" required class="w-full bg-slate-900 border border-slate-600 text-slate-100 rounded-lg px-4 py-2.5 focus:ring-2 focus:ring-emerald-500 outline-none">
+            </div>
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg transition-colors">Enviar Link de Recuperação</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

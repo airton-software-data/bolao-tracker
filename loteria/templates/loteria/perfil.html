@@ -1,0 +1,45 @@
+{% extends 'loteria/base.html' %}
+
+{% block title %}Meu Perfil - Bolão Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-3xl font-extrabold text-white">Meu Perfil</h2>
+        <p class="text-slate-400 mt-2">Gerencie suas informações de recebimento.</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="mb-6 bg-emerald-900/30 border border-emerald-500 text-emerald-400 px-4 py-3 rounded-lg text-center font-semibold">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700">
+        <form method="POST" class="space-y-6">
+            {% csrf_token %}
+            
+            <div>
+                <label class="block text-sm font-medium text-slate-300 mb-1">Nome de Usuário</label>
+                <input type="text" value="{{ user.username }}" class="w-full bg-slate-900/50 border border-slate-700 text-slate-500 rounded-lg px-4 py-2.5 cursor-not-allowed" disabled>
+            </div>
+
+            <div>
+                <label for="chave_pix" class="block text-sm font-medium text-slate-300 mb-1">Minha Chave PIX (Para receber prêmios)</label>
+                <input type="text" name="chave_pix" id="chave_pix" value="{{ perfil.chave_pix|default:'' }}" placeholder="CPF, E-mail, Celular ou Chave Aleatória" 
+                    class="w-full bg-slate-900 border border-slate-600 text-slate-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                <p class="text-xs text-slate-500 mt-1">O administrador usará esta chave para te pagar caso o bolão ganhe.</p>
+            </div>
+
+            <div class="flex justify-end gap-3 pt-4 border-t border-slate-700">
+                <a href="{% url 'home' %}" class="px-5 py-2.5 text-slate-300 hover:text-white font-medium transition-colors">Voltar</a>
+                <button type="submit" class="bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-2.5 px-6 rounded-lg shadow-lg transition-colors duration-200">
+                    Salvar Dados
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

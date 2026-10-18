@@ -1,0 +1,55 @@
+{% extends 'loteria/base.html' %}
+
+{% block title %}Login - Bolão Tracker{% endblock %}
+
+{% block content %}
+<div class="min-h-[70vh] flex flex-col justify-center items-center px-4">
+    <div class="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8">
+        
+        <div class="text-center mb-8">
+            <h2 class="text-3xl font-extrabold text-white">Acessar Conta</h2>
+            <p class="text-slate-400 mt-2 text-sm">Entre para visualizar seus jogos e cotas</p>
+        </div>
+
+        <form method="POST" class="space-y-4">
+            {% csrf_token %}
+            
+            <!-- Campo Nome de Usuário -->
+            <div>
+                <label for="id_username" class="block text-sm font-medium text-slate-300 mb-1">Nome de Usuário</label>
+                <input type="text" name="username" id="id_username" class="w-full bg-slate-900 border border-slate-600 text-slate-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" required autofocus>
+            </div>
+
+            <!-- Campo Senha com Link de Recuperação -->
+            <div>
+                <div class="flex justify-between items-center mb-1">
+                    <label for="id_password" class="block text-sm font-medium text-slate-300">Senha</label>
+                    <a href="{% url 'password_reset' %}" class="text-xs text-emerald-400 hover:text-emerald-300 transition-colors">Esqueceu a senha?</a>
+                </div>
+                <input type="password" name="password" id="id_password" class="w-full bg-slate-900 border border-slate-600 text-slate-100 rounded-lg px-4 py-2.5 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:border-transparent transition-all" required>
+            </div>
+
+            <!-- Alerta de erro de login (senha ou usuário incorretos) -->
+            {% if form.errors %}
+                <div class="text-sm text-red-400 font-medium text-center mt-2">
+                    Usuário ou senha incorretos. Tente novamente.
+                </div>
+            {% endif %}
+
+            <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 px-4 rounded-lg shadow-lg transition-colors duration-200 mt-6">
+                Entrar no Sistema
+            </button>
+        </form>
+        
+        <!-- Link para Cadastro -->
+        <div class="text-center mt-8 pt-6 border-t border-slate-700/50">
+            <p class="text-slate-400 text-sm">Ainda não tem uma conta? 
+                <a href="{% url 'cadastro' %}" class="text-emerald-400 hover:text-emerald-300 font-bold transition-colors ml-1">
+                    Cadastre-se aqui
+                </a>
+            </p>
+        </div>
+        
+    </div>
+</div>
+{% endblock %}

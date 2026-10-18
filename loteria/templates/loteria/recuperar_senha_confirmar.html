@@ -1,0 +1,24 @@
+{% extends 'loteria/base.html' %}
+{% block content %}
+<div class="min-h-[60vh] flex flex-col justify-center items-center px-4">
+    <div class="w-full max-w-md bg-slate-800 rounded-2xl shadow-xl border border-slate-700 p-8">
+        {% if validlink %}
+            <h2 class="text-2xl font-bold text-white mb-4">Nova Senha</h2>
+            <form method="POST" class="space-y-4">
+                {% csrf_token %}
+                {% for field in form %}
+                    <div>
+                        <label class="block text-sm text-slate-300 mb-1">{{ field.label }}</label>
+                        <input type="password" name="{{ field.name }}" required class="w-full bg-slate-900 border border-slate-600 text-slate-100 rounded-lg px-4 py-2.5 outline-none focus:ring-2 focus:ring-emerald-500">
+                        <p class="text-xs text-red-400 mt-1">{{ field.errors.0 }}</p>
+                    </div>
+                {% endfor %}
+                <button type="submit" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold py-3 rounded-lg mt-4">Salvar Nova Senha</button>
+            </form>
+        {% else %}
+            <h2 class="text-2xl font-bold text-red-400 mb-2">Link Inválido</h2>
+            <p class="text-slate-400 text-sm">O link de recuperação expirou ou já foi utilizado. Por favor, solicite um novo.</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

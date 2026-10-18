@@ -1,0 +1,137 @@
+{% extends 'loteria/base.html' %}
+
+{% block title %}Meus Bolões - Bolão Tracker{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto">
+    <div class="mb-8">
+        <h2 class="text-3xl font-extrabold text-white">Meus Bolões</h2>
+        <p class="text-slate-400 mt-2">Acompanhe os seus jogos e resultados.</p>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+
+        {% if eh_admin %}
+            <!-- NOVO: Dashboard Financeiro (Apenas para Admin) -->
+            <div class="col-span-full mb-4 bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-700">
+                <h3 class="text-xl font-bold text-slate-200 mb-4 border-b border-slate-700 pb-2">Evolução Financeira (Últimos Bolões)</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="graficoArrecadacao"></canvas>
+                </div>
+            </div>
+            
+        <!-- Visão do Administrador (lista de cards existente...) -->
+        {% for bolao in boloes %}
+        <a href="{% url 'detalhe_bolao' bolao.id %}"
+            class="block bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-emerald-500 transition shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-emerald-400">{{ bolao.nome }}</h3>
+                <span class="px-2 py-1 bg-slate-700 text-xs rounded text-slate-300">{{ bolao.get_tipo_display }}</span>
+            </div>
+            <p class="text-slate-400 text-sm mb-1">Sorteio: <span class="text-white">{{ bolao.data_sorteio|date:"d/m/Y"
+                    }}</span></p>
+            <p class="text-slate-400 text-sm">Valor da Cota: <span class="text-white">R$ {{ bolao.valor_cota }}</span>
+            </p>
+        </a>
+        {% empty %}
+        <p class="text-slate-500">Nenhum bolão cadastrado no sistema.</p>
+        {% endfor %}
+
+        {% else %}
+        <!-- Visão do Usuário Comum -->
+        {% for cota in minhas_cotas %}
+        <a href="{% url 'detalhe_bolao' cota.bolao.id %}"
+            class="block bg-slate-800 border border-slate-700 rounded-xl p-6 hover:border-emerald-500 transition shadow-lg">
+            <div class="flex justify-between items-start mb-4">
+                <h3 class="text-xl font-bold text-emerald-400">{{ cota.bolao.nome }}</h3>
+                {% if cota.pago %}
+                <span
+                    class="px-2 py-1 bg-emerald-900/50 text-emerald-400 border border-emerald-500/30 text-xs rounded font-bold">PAGO</span>
+                {% else %}
+                <span
+                    class="px-2 py-1 bg-yellow-900/50 text-yellow-400 border border-yellow-500/30 text-xs rounded font-bold">PENDENTE</span>
+                {% endif %}
+            </div>
+            <p class="text-slate-400 text-sm mb-1">Sorteio: <span class="text-white">{{ cota.bolao.data_sorteio|date:'d/m/Y' }}</span></p>
+            <p class="text-slate-400 text-sm">Valor da Cota: <span class="text-white">R$ {{ cota.bolao.valor_cota }}</span></p>
+        </a>
+        {% empty %}
+        <div class="col-span-full text-center py-10 bg-slate-800 rounded-xl border border-slate-700">
+            <p class="text-slate-400">Você ainda não está participando de nenhum bolão.</p>
+        </div>
+        {% endfor %}
+        {% endif %}
+
+    </div>
+</div>
+
+</div> <!-- Fim da div max-w-4xl mx-auto -->
+
+<!-- SCRIPT DO CHART.JS AQUI NO FINAL DA PÁGINA -->
+{% if eh_admin %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('graficoArrecadacao').getContext('2d');
+        
+        // Recebe as variáveis geradas pelo Python de forma segura
+        const labels = {{ labels_json|safe }};
+        const dataValues = {{ valores_json|safe }};
+        
+        new Chart(ctx, {
+            type: 'line', // Tipo do gráfico: Linha com preenchimento
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Arrecadação (R$)',
+                    data: dataValues,
+                    borderColor: '#34d399', // Verde Emerald do Tailwind
+                    backgroundColor: 'rgba(52, 211, 153, 0.15)', // Verde transparente
+                    borderWidth: 3,
+                    fill: true,
+                    tension: 0.3, // Deixa a linha suave e curvada
+                    pointBackgroundColor: '#10b981',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5,
+                    pointHoverRadius: 7
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: { display: false }, // Oculta a legenda superior
+                    tooltip: {
+                        backgroundColor: 'rgba(15, 23, 42, 0.9)', // Tooltip escuro
+                        titleFont: { size: 14 },
+                        bodyFont: { size: 14, weight: 'bold' },
+                        callbacks: {
+                            label: function(context) {
+                                return ' R$ ' + context.parsed.y.toFixed(2).replace('.', ',');
+                            }
+                        }
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        grid: { color: '#334155' }, // Linhas de fundo cor Slate
+                        ticks: { 
+                            color: '#94a3b8',
+                            callback: function(value) { return 'R$ ' + value; }
+                        } 
+                    },
+                    x: {
+                        grid: { display: false }, // Remove as linhas verticais
+                        ticks: { color: '#94a3b8', font: { weight: 'bold' } }
+                    }
+                }
+            }
+        });
+    });
+</script>
+{% endif %}
+
+
+{% endblock %}

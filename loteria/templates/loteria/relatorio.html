@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Relatório PDF - {{ bolao.nome }}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Instruções específicas para a impressora e gerador de PDF */
+        @media print {
+            @page { margin: 1.5cm; }
+            body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+            .no-print { display: none !important; }
+        }
+    </style>
+</head>
+<body class="bg-white text-slate-900 font-sans p-4 sm:p-8">
+
+    <div class="max-w-4xl mx-auto">
+        <!-- Barra de Controle (Oculta na hora de imprimir) -->
+        <div class="no-print flex justify-between items-center bg-slate-100 border border-slate-300 p-4 rounded-lg mb-8 shadow-sm">
+            <a href="{% url 'detalhe_bolao' bolao.id %}" class="text-slate-600 hover:text-slate-900 font-bold flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
+                Voltar
+            </a>
+            <button onclick="window.print()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-2 px-6 rounded-lg shadow flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg>
+                Salvar PDF / Imprimir
+            </button>
+        </div>
+
+        <!-- Cabeçalho do Documento -->
+        <div class="text-center border-b-2 border-slate-800 pb-6 mb-8">
+            <h1 class="text-4xl font-black uppercase tracking-wider mb-2">{{ bolao.nome }}</h1>
+            <p class="text-lg">Data do Sorteio: <strong>{{ bolao.data_sorteio|date:"d/m/Y" }}</strong> | Tipo: <strong>{{ bolao.get_tipo_display }}</strong></p>
+        </div>
+
+        <!-- Resumo Financeiro -->
+        <div class="flex justify-between items-center mb-10 border border-slate-300 bg-slate-50 p-6 rounded-xl">
+            <div class="text-center">
+                <p class="text-sm text-slate-500 font-bold uppercase tracking-wide">Valor da Cota</p>
+                <p class="text-2xl font-black">R$ {{ bolao.valor_cota }}</p>
+            </div>
+            <div class="text-center border-x border-slate-300 px-12">
+                <p class="text-sm text-slate-500 font-bold uppercase tracking-wide">Cotas Pagas</p>
+                <p class="text-2xl font-black">{{ cotas_pagas|length }}</p>
+            </div>
+            <div class="text-center">
+                <p class="text-sm text-slate-500 font-bold uppercase tracking-wide">Arrecadação Total</p>
+                <p class="text-2xl font-black">R$ {{ total_arrecadado|floatformat:2 }}</p>
+            </div>
+        </div>
+
+        <!-- Participantes Confirmados -->
+        <h2 class="text-xl font-bold mb-4 border-b border-slate-300 pb-2">Participantes Confirmados ({{ cotas_pagas|length }})</h2>
+        <ul class="list-disc pl-6 columns-2 gap-8 mb-10 text-slate-700">
+            {% for cota in cotas_pagas %}
+                <li class="mb-1">{{ cota.membro.usuario.get_full_name|default:cota.membro.usuario.username }}</li>
+            {% endfor %}
+        </ul>
+
+        <!-- Lista de Jogos (Ajustada para caber no papel) -->
+        <h2 class="text-xl font-bold mb-4 border-b border-slate-300 pb-2">Bilhetes Oficiais ({{ jogos|length }})</h2>
+        <div class="grid grid-cols-2 gap-4">
+            {% for jogo in jogos %}
+                <div class="border border-slate-300 p-3 rounded-lg bg-slate-50">
+                    <p class="text-xs text-slate-500 font-bold mb-1">JOGO #{{ forloop.counter }}</p>
+                    <div class="font-mono text-lg font-bold tracking-widest text-center">
+                        {% for dezena in jogo.dezenas_lista %}
+                            {{ dezena }}{% if not forloop.last %} - {% endif %}
+                        {% endfor %}
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Rodapé do PDF -->
+        <div class="mt-16 text-center text-xs text-slate-400 border-t border-slate-200 pt-4">
+            <p>Relatório oficial gerado pelo sistema Bolão Tracker em {% now "d/m/Y H:i" %}</p>
+        </div>
+    </div>
+
+    <script>
+        // Dispara a janela de impressão do PDF automaticamente ao abrir a página
+        window.onload = function() { window.print(); }
+    </script>
+</body>
+</html>
