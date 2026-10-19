@@ -139,8 +139,7 @@ class BolaoAdmin(admin.ModelAdmin):
             )
             
         except Exception:
-            return format_html('<span style="color: red;">Erro ao calcular</span>')
-        
+            return format_html('<span style="color: red;">{}</span>', 'Erro ao calcular')
         
 @admin.register(Cota)
 class CotaAdmin(admin.ModelAdmin):

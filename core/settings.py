@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 # SECURITY WARNING: keep the secret key used in production secret!
 # Puxa a chave do arquivo oculto
-SECRET_KEY = os.getenv('SECRET_KEY')
+SECRET_KEY = os.getenv('django-insecure-7y#wa%^t^14l$99d(f^3=rc(@b1)=#&u+1aeu4q33n7cn!5*c)')
 # SECRET_KEY = 'django-insecure-7y#wa%^t^14l$99d(f^3=rc(@b1)=#&u+1aeu4q33n7cn!5*c)'
 
 # SECURITY WARNING: don't run with debug turned on in production!
